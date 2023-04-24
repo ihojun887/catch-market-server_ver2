@@ -21,7 +21,7 @@ app.use("/uploads", express.static("uploads")); // uploads 폴더를 정적 파�
 
 app.get("/banners", (req, res) => {
   models.Banner.findAll({
-    limit: 2,
+    limit: 3,
   })
     .then((result) => {
       console.log("BANNERS : ", result);
