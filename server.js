@@ -19,10 +19,34 @@ app.use(express.json());
 app.use(cors()); // 모든 브라우저에서 나의 서버에 요청 가능
 app.use("/uploads", express.static("uploads")); // uploads 폴더를 정적 파일 폴더로 지정
 
+app.get("/banners", (req, res) => {
+  models.Banner.findAll({
+    limit: 2,
+  })
+    .then((result) => {
+      console.log("BANNERS : ", result);
+      res.send({
+        banners: result,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("배너 조회에 실패했습니다.");
+    });
+});
+
 app.get("/products", async (req, res) => {
   models.Product.findAll({
     order: [["createdAt", "DESC"]],
-    attributes: ["id", "name", "price", "createdAt", "seller", "imageUrl"],
+    attributes: [
+      "id",
+      "name",
+      "price",
+      "createdAt",
+      "seller",
+      "imageUrl",
+      "soldout",
+    ],
   })
     .then((result) => {
       console.log("PRODUCTS : ", result);
@@ -89,6 +113,29 @@ app.post("/image", upload.single("image"), (req, res) => {
   res.send({
     imageUrl: file.path,
   });
+});
+
+app.post("/purchase/:id", (req, res) => {
+  const { id } = req.params;
+  models.Product.update(
+    {
+      soldout: 1,
+    },
+    {
+      where: {
+        id,
+      },
+    }
+  )
+    .then((result) => {
+      res.send({
+        result: true,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).send("구매에 실패했습니다.");
+    });
 });
 
 app.listen(port, () => {
