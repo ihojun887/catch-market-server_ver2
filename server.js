@@ -142,6 +142,34 @@ app.post("/purchase/:id", (req, res) => {
     });
 });
 
+app.get("/products/:id/recommendation", (req, res) => {
+  const { id } = req.params;
+  models.Product.findOne({
+    where: {
+      id,
+    },
+  }).then((product) => {
+    const type = product.type;
+    models.Product.findAll({
+      where: {
+        type,
+        id: {
+          [models.Sequelize.Op.ne]: id,
+        },
+      },
+    })
+      .then((products) => {
+        res.send({
+          products,
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send("에러가 발생하여 추천 상품을 가져올 수 없습니다.");
+      });
+  });
+});
+
 app.listen(port, () => {
   console.log("재우의 서버가 돌아가고 있습니다.");
   models.sequelize
